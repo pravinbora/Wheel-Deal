@@ -1,0 +1,322 @@
+{% extends 'base.html' %}
+{% block title %}Billing - WHEEL DEAL{% endblock %}
+
+{% block content %}
+<style>
+  .billing-container {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 25px;
+  }
+  
+  .form-card {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  }
+  
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  
+  .form-group label {
+    font-weight: 600;
+    color: #0f172a;
+    font-size: 0.9rem;
+  }
+  
+  .form-group select {
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    background: #f8fafc;
+    color: #0f172a;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s ease;
+  }
+  
+  .form-group select:focus {
+    outline: none;
+    border-color: #667eea;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  }
+  
+  .btn {
+    width: 100%;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Inter', sans-serif;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
+  
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+  }
+  
+  .bill-card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    display: none;
+  }
+  
+  .bill-card.show {
+    display: block;
+  }
+  
+  .bill-header {
+    text-align: center;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .bill-header h3 {
+    margin: 0;
+    color: #0f172a;
+  }
+  
+  .bill-section {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  .bill-section:last-child {
+    border-bottom: none;
+  }
+  
+  .bill-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+  }
+  
+  .bill-row strong {
+    color: #0f172a;
+    font-weight: 600;
+  }
+  
+  .bill-row .amount {
+    color: #667eea;
+    font-weight: 600;
+  }
+  
+  .bill-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #0f172a;
+    padding-top: 15px;
+    border-top: 2px solid #667eea;
+  }
+  
+  .bill-total .amount {
+    color: #667eea;
+  }
+  
+  .bill-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 25px;
+  }
+  
+  .btn-print {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    flex: 1;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  }
+  
+  .btn-print:hover {
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+  }
+  
+  @media print {
+    .billing-container {
+      grid-template-columns: 1fr;
+    }
+    
+    .form-card {
+      display: none;
+    }
+    
+    .bill-card {
+      box-shadow: none;
+      padding: 0;
+    }
+  }
+</style>
+
+<h1 style="margin-bottom: 30px; color: #0f172a;">
+  <i class="bi bi-receipt" style="margin-right: 12px; color: #667eea;"></i>
+  Generate Bill
+</h1>
+
+<div class="billing-container">
+  <!-- Selection Form -->
+  <div class="form-card">
+    <h3 style="margin-top: 0; margin-bottom: 20px; color: #0f172a;">
+      <i class="bi bi-search" style="margin-right: 8px; color: #667eea;"></i>
+      Select Booking
+    </h3>
+    
+    <div class="form-group">
+      <label>Customer</label>
+      <select id="cust">
+        <option value="">-- Select customer --</option>
+        {% for c in customers %}<option value="{{ c.customer_username }}">{{ c.customer_username }}</option>{% endfor %}
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label>Booking ID</label>
+      <select id="bid">
+        <option value="">-- Select booking --</option>
+      </select>
+    </div>
+    
+    <button onclick="loadBill()" class="btn">Generate Bill</button>
+  </div>
+  
+  <!-- Bill Display Area -->
+  <div class="bill-card" id="bill-area">
+    <div class="bill-header">
+      <h3><i class="bi bi-receipt-cutoff"></i> Bike Booking Bill</h3>
+    </div>
+    <div id="bill-content"></div>
+    <div class="bill-actions">
+      <button onclick="window.print()" class="btn btn-print">
+        <i class="bi bi-printer"></i> Print Bill
+      </button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+const cust = document.getElementById('cust');
+const bid  = document.getElementById('bid');
+
+function loadBookingIds() {
+  if (!cust.value) {
+    bid.innerHTML = '<option value="">-- Select booking --</option>';
+    return;
+  }
+  
+  fetch('/api/bookings_for_user/' + cust.value)
+    .then(r => r.json())
+    .then(ids => {
+      bid.innerHTML = '<option value="">-- Select booking --</option>';
+      ids.forEach(i => {
+        bid.innerHTML += `<option value="${i}">#${i}</option>`;
+      });
+    });
+}
+
+cust.addEventListener('change', loadBookingIds);
+loadBookingIds();
+
+function loadBill() {
+  if (!cust.value || !bid.value) {
+    alert('Please select both customer and booking ID');
+    return;
+  }
+  
+  fetch(`/api/bill/${cust.value}/${bid.value}`)
+    .then(r => r.json())
+    .then(b => {
+      if (!b) {
+        alert('Bill not found');
+        return;
+      }
+      
+      document.getElementById('bill-content').innerHTML = `
+        <div class="bill-section">
+          <div class="bill-row">
+            <span><strong>Customer:</strong></span>
+            <span>${b.customer_name || 'N/A'}</span>
+          </div>
+          <div class="bill-row">
+            <span><strong>Phone:</strong></span>
+            <span>${b.customer_phone || 'N/A'}</span>
+          </div>
+        </div>
+        
+        <div class="bill-section">
+          <div class="bill-row">
+            <span><strong>Bike:</strong></span>
+            <span>${b.bike_name} (${b.bike_no})</span>
+          </div>
+          <div class="bill-row">
+            <span><strong>Brand & Model:</strong></span>
+            <span>${b.brand_name} ${b.brand_model}</span>
+          </div>
+          <div class="bill-row">
+            <span><strong>Category:</strong></span>
+            <span>${b.bike_category}</span>
+          </div>
+        </div>
+        
+        <div class="bill-section">
+          <div class="bill-row">
+            <span><strong>Duration:</strong></span>
+            <span>${b.total_days} days</span>
+          </div>
+          <div class="bill-row">
+            <span><strong>Booking Date:</strong></span>
+            <span>${b.booking_date || 'N/A'}</span>
+          </div>
+        </div>
+        
+        <div class="bill-section">
+          <div class="bill-row">
+            <span><strong>Rent Per Day:</strong></span>
+            <span class="amount">₹${b.bike_rent}</span>
+          </div>
+          <div class="bill-row">
+            <span><strong>Total Days:</strong></span>
+            <span>${b.total_days}</span>
+          </div>
+          <div class="bill-row">
+            <span><strong>Gross Rent:</strong></span>
+            <span class="amount">₹${(b.bike_rent * b.total_days).toFixed(2)}</span>
+          </div>
+          <div class="bill-row">
+            <span><strong>Tax (2.1%):</strong></span>
+            <span class="amount">₹${(b.tax || (b.bike_rent * b.total_days * 0.021)).toFixed(2)}</span>
+          </div>
+        </div>
+        
+        <div class="bill-total">
+          <span>TOTAL AMOUNT:</span>
+          <span class="amount">₹${(b.total || (b.bike_rent * b.total_days * 1.021)).toFixed(2)}</span>
+        </div>
+      `;
+      document.getElementById('bill-area').classList.add('show');
+    })
+    .catch(e => {
+      console.error('Error:', e);
+      alert('Error loading bill');
+    });
+}
+</script>
+{% endblock %}

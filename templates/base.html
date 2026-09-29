@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="WHEEL DEAL - Modern Bike Rental Management System">
+  <title>{% block title %}WHEEL DEAL - Bike Rental System{% endblock %}</title>
+  
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  
+  <!-- Modern CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style.css') }}">
+  
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <div class="d-flex">
+    <!-- Sidebar Navigation -->
+    {% if session.get('role') and request.endpoint != 'login' and request.endpoint != 'signup' %}
+    <aside class="sidebar">
+      <!-- Brand -->
+      <div class="brand">
+        <i class="bi bi-bicycle"></i>
+        <span>WheelDeal</span>
+      </div>
+      
+      <!-- Navigation -->
+      <nav>
+        {% if session.role == 'admin' %}
+          <!-- Admin Navigation -->
+          <div class="nav-section">
+            <div class="nav-label">Main</div>
+            <a href="{{ url_for('admin_home') }}" class="{% if request.endpoint == 'admin_home' %}active{% endif %}">
+              <i class="bi bi-house-door"></i>
+              <span>Dashboard</span>
+            </a>
+          </div>
+          
+          <div class="nav-section">
+            <div class="nav-label">Bookings</div>
+            <a href="{{ url_for('add_booking') }}" class="{% if request.endpoint == 'add_booking' %}active{% endif %}">
+              <i class="bi bi-plus-circle"></i>
+              <span>New Booking</span>
+            </a>
+            <a href="{{ url_for('view_bookings') }}" class="{% if request.endpoint == 'view_bookings' %}active{% endif %}">
+              <i class="bi bi-calendar-check"></i>
+              <span>Manage Bookings</span>
+            </a>
+          </div>
+          
+          <div class="nav-section">
+            <div class="nav-label">Fleet</div>
+            <a href="{{ url_for('add_bike') }}" class="{% if request.endpoint == 'add_bike' %}active{% endif %}">
+              <i class="bi bi-plus-circle"></i>
+              <span>Add Bike</span>
+            </a>
+            <a href="{{ url_for('view_bikes') }}" class="{% if request.endpoint == 'view_bikes' %}active{% endif %}">
+              <i class="bi bi-bicycle"></i>
+              <span>View Bikes</span>
+            </a>
+            <a href="{{ url_for('add_brand') }}" class="{% if request.endpoint == 'add_brand' %}active{% endif %}">
+              <i class="bi bi-plus-circle"></i>
+              <span>Add Brand</span>
+            </a>
+            <a href="{{ url_for('view_brands') }}" class="{% if request.endpoint == 'view_brands' %}active{% endif %}">
+              <i class="bi bi-tags"></i>
+              <span>View Brands</span>
+            </a>
+          </div>
+          
+          <div class="nav-section">
+            <div class="nav-label">Management</div>
+            <a href="{{ url_for('view_users') }}" class="{% if request.endpoint == 'view_users' %}active{% endif %}">
+              <i class="bi bi-people"></i>
+              <span>Users</span>
+            </a>
+            <a href="{{ url_for('update_user') }}" class="{% if request.endpoint == 'update_user' %}active{% endif %}">
+              <i class="bi bi-person-gear"></i>
+              <span>Update User</span>
+            </a>
+            <a href="{{ url_for('check_bill') }}" class="{% if request.endpoint == 'check_bill' %}active{% endif %}">
+              <i class="bi bi-receipt"></i>
+              <span>Billing</span>
+            </a>
+          </div>
+        {% else %}
+          <!-- User Navigation -->
+          <div class="nav-section">
+            <div class="nav-label">Main</div>
+            <a href="{{ url_for('user_home') }}" class="{% if request.endpoint == 'user_home' %}active{% endif %}">
+              <i class="bi bi-house-door"></i>
+              <span>Dashboard</span>
+            </a>
+          </div>
+          
+          <div class="nav-section">
+            <div class="nav-label">Bookings</div>
+            <a href="{{ url_for('add_booking') }}" class="{% if request.endpoint == 'add_booking' %}active{% endif %}">
+              <i class="bi bi-plus-circle"></i>
+              <span>New Booking</span>
+            </a>
+            <a href="{{ url_for('view_bookings') }}" class="{% if request.endpoint == 'view_bookings' %}active{% endif %}">
+              <i class="bi bi-calendar-check"></i>
+              <span>My Bookings</span>
+            </a>
+          </div>
+          
+          <div class="nav-section">
+            <div class="nav-label">Browse</div>
+            <a href="{{ url_for('view_bikes') }}" class="{% if request.endpoint == 'view_bikes' %}active{% endif %}">
+              <i class="bi bi-bicycle"></i>
+              <span>Available Bikes</span>
+            </a>
+            <a href="{{ url_for('view_brands') }}" class="{% if request.endpoint == 'view_brands' %}active{% endif %}">
+              <i class="bi bi-tags"></i>
+              <span>Bike Brands</span>
+            </a>
+          </div>
+          
+          <div class="nav-section">
+            <div class="nav-label">Account</div>
+            <a href="{{ url_for('update_user') }}" class="{% if request.endpoint == 'update_user' %}active{% endif %}">
+              <i class="bi bi-person-circle"></i>
+              <span>My Profile</span>
+            </a>
+            <a href="{{ url_for('check_bill') }}" class="{% if request.endpoint == 'check_bill' %}active{% endif %}">
+              <i class="bi bi-receipt"></i>
+              <span>My Bills</span>
+            </a>
+          </div>
+        {% endif %}
+      </nav>
+      
+      <!-- Logout Section -->
+      <div class="logout-section">
+        <a href="{{ url_for('logout') }}">
+          <i class="bi bi-box-arrow-left"></i>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+    {% endif %}
+    
+    <!-- Main Content -->
+    <main class="main-content" style="flex: 1;">
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in messages %}
+          <div class="alert alert-{{ 'danger' if cat == 'error' else cat }} alert-dismissible fade show" role="alert">
+            {% if cat == 'danger' or cat == 'error' %}
+              <i class="bi bi-exclamation-circle me-2"></i>
+            {% elif cat == 'success' %}
+              <i class="bi bi-check-circle me-2"></i>
+            {% elif cat == 'warning' %}
+              <i class="bi bi-exclamation-triangle me-2"></i>
+            {% else %}
+              <i class="bi bi-info-circle me-2"></i>
+            {% endif %}
+            {{ msg }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endwith %}
+      
+      <!-- Page Content -->
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Auto-close alerts after 5 seconds
+    document.querySelectorAll('.alert').forEach(alert => {
+      const bsAlert = new bootstrap.Alert(alert);
+      setTimeout(() => bsAlert.close(), 5000);
+    });
+  </script>
+  
+  {% block scripts %}{% endblock %}
+</body>
+</html>
